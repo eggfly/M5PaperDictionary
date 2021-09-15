@@ -21,6 +21,7 @@ public:
     String getData(void);
 
 private:
+    static const bool SHOW_KEY_PRESS_ANIMATION = false;
     EPDGUI_Button *_btn[29];
     EPDGUI_Switch *_sw[3];
     EPDGUI_Base *_key[32];

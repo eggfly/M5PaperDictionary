@@ -70,17 +70,23 @@ EPDGUI_Keyboard::EPDGUI_Keyboard(int16_t dir, uint32_t style): EPDGUI_Base()
         const uint16_t k4thLineY = 464;
         const uint16_t kBaseX = 84;
 
-        for(int i = 0; i < 10; i++)
+        for (int i = 0; i < 10; i++)
         {
-            _btn[i] = new EPDGUI_Button(kKeyAlphaMapLowerCase[i], kBaseX + (kKeyInterval + kKeyWidth) * i, kFirstLineY, kKeyWidth, kKeyHeight);
+            EPDGUI_Button *btn = new EPDGUI_Button(kKeyAlphaMapLowerCase[i], kBaseX + (kKeyInterval + kKeyWidth) * i, kFirstLineY, kKeyWidth, kKeyHeight);
+            btn->setShowPressingAnimation(SHOW_KEY_PRESS_ANIMATION);
+            _btn[i] = btn;
         }
-        for(int i = 10; i < 19; i++)
+        for (int i = 10; i < 19; i++)
         {
-            _btn[i] = new EPDGUI_Button(kKeyAlphaMapLowerCase[i], kBaseX + 40 + (kKeyInterval + kKeyWidth) * (i - 10), kSecondLineY, kKeyWidth, kKeyHeight);
+            EPDGUI_Button *btn = new EPDGUI_Button(kKeyAlphaMapLowerCase[i], kBaseX + 40 + (kKeyInterval + kKeyWidth) * (i - 10), kSecondLineY, kKeyWidth, kKeyHeight);
+            btn->setShowPressingAnimation(SHOW_KEY_PRESS_ANIMATION);
+            _btn[i] = btn;
         }
-        for(int i = 19; i < 26; i++)
+        for (int i = 19; i < 26; i++)
         {
-            _btn[i] = new EPDGUI_Button(kKeyAlphaMapLowerCase[i], kBaseX + 118 + (kKeyInterval + kKeyWidth) * (i - 19), kThirdLineY, kKeyWidth, kKeyHeight);
+            EPDGUI_Button *btn = new EPDGUI_Button(kKeyAlphaMapLowerCase[i], kBaseX + 118 + (kKeyInterval + kKeyWidth) * (i - 19), kThirdLineY, kKeyWidth, kKeyHeight);
+            btn->setShowPressingAnimation(SHOW_KEY_PRESS_ANIMATION);
+            _btn[i] = btn;
         }
 
         _btn[kKeyBackspace] = new EPDGUI_Button("", kBaseX + 792 - 96, kThirdLineY, 96, kKeyHeight);
@@ -131,17 +137,23 @@ EPDGUI_Keyboard::EPDGUI_Keyboard(int16_t dir, uint32_t style): EPDGUI_Base()
         const uint16_t kThirdLineY = kSecondLineY + 64;
         const uint16_t k4thLineY = kThirdLineY + 64;
 
-        for(int i = 0; i < 10; i++)
+        for (int i = 0; i < 10; i++)
         {
-            _btn[i] = new EPDGUI_Button(kKeyAlphaMapLowerCase[i], kBaseX + (kKeyInterval + kKeyWidth) * i, kFirstLineY, kKeyWidth, kKeyHeight);
+            EPDGUI_Button *btn = new EPDGUI_Button(kKeyAlphaMapLowerCase[i], kBaseX + (kKeyInterval + kKeyWidth) * i, kFirstLineY, kKeyWidth, kKeyHeight);
+            btn->setShowPressingAnimation(SHOW_KEY_PRESS_ANIMATION);
+            _btn[i] = btn;
         }
-        for(int i = 10; i < 19; i++)
+        for (int i = 10; i < 19; i++)
         {
-            _btn[i] = new EPDGUI_Button(kKeyAlphaMapLowerCase[i], kBaseX + 28 + (kKeyInterval + kKeyWidth) * (i - 10), kSecondLineY, kKeyWidth, kKeyHeight);
+            EPDGUI_Button *btn = new EPDGUI_Button(kKeyAlphaMapLowerCase[i], kBaseX + 28 + (kKeyInterval + kKeyWidth) * (i - 10), kSecondLineY, kKeyWidth, kKeyHeight);
+            btn->setShowPressingAnimation(SHOW_KEY_PRESS_ANIMATION);
+            _btn[i] = btn;
         }
-        for(int i = 19; i < 26; i++)
+        for (int i = 19; i < 26; i++)
         {
-            _btn[i] = new EPDGUI_Button(kKeyAlphaMapLowerCase[i], kBaseX + 80 + (kKeyInterval + kKeyWidth) * (i - 19), kThirdLineY, kKeyWidth, kKeyHeight);
+            EPDGUI_Button *btn = new EPDGUI_Button(kKeyAlphaMapLowerCase[i], kBaseX + 80 + (kKeyInterval + kKeyWidth) * (i - 19), kThirdLineY, kKeyWidth, kKeyHeight);
+            btn->setShowPressingAnimation(SHOW_KEY_PRESS_ANIMATION);
+            _btn[i] = btn;
         }
 
         _btn[kKeyBackspace] = new EPDGUI_Button("", kBaseX + 512 - 60, kThirdLineY, 60, kKeyHeight);

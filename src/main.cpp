@@ -5,6 +5,8 @@
 
 void setup()
 {
+    int core_id = xPortGetCoreID();
+    log_d("setup() runs on core_id = %d", core_id);
     pinMode(M5EPD_MAIN_PWR_PIN, OUTPUT);
     M5.enableMainPower();
 
@@ -14,5 +16,7 @@ void setup()
 
 void loop()
 {
+    int core_id = xPortGetCoreID();
+    log_d("loop() runs on core_id = %d", core_id);
     EPDGUI_MainLoop();
 }

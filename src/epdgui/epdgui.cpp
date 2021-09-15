@@ -2,12 +2,22 @@
 #include <map>
 #include <list>
 #include "epdgui.h"
+#include "looper.h"
 
 typedef struct
 {
     Frame_Base* frame;
     epdgui_args_vector_t args;
 }frame_struct_t;
+
+typedef struct
+{
+    bool is_finger_up;
+    uint16_t x;
+    uint16_t y;
+} touch_event_struct_t;
+
+static uint32_t last_active_time = 0;
 
 std::list<EPDGUI_Base*> epdgui_object_list;
 uint32_t obj_id = 1;
@@ -17,6 +27,18 @@ std::map<String, frame_struct_t> frame_map;
 uint8_t frame_switch_count = 0;
 bool _is_auto_update = true;
 uint16_t _last_pos_x = 0xFFFF, _last_pos_y = 0xFFFF;
+bool _is_finger_up = false;
+
+// The main looper.LoopForever() consumes main task queue
+Looper main_looper;
+TaskRunner main_task_runner(&main_looper);
+SemaphoreHandle_t x_i2c_emaphore = xSemaphoreCreateMutex();
+
+std::map<TaskFunc, const char *> func_map_for_debug = {
+    {EPDGUI_StartFrameFunc, "EPDGUI_StartFrameFunc"},
+    {EPDGUI_RunFrameFunc, "EPDGUI_RunFrameFunc"},
+    {EPDGUI_HandleTouchEventFunc, "EPDGUI_HandleTouchEventFunc"},
+};
 
 void EPDGUI_AddObject(EPDGUI_Base* object)
 {
@@ -55,24 +77,91 @@ void EPDGUI_Clear(void)
     epdgui_object_list.clear();
 }
 
-void EPDGUI_Run(Frame_Base* frame)
+void EPDGUI_HandleTouchEventFunc(void *params)
 {
-    uint32_t last_active_time = 0;
-
-    if(frame->isRun() == 0)
+    touch_event_struct_t *event = (touch_event_struct_t *)params;
+    // log_d("up=%d, x=%d, y=%d", event->is_finger_up, event->x, event->y);
+    if (event->is_finger_up)
     {
-        frame->exit();
-        log_d("Exit %s", frame->GetFrameName().c_str());
-        if(wait_for_delete != NULL)
-        {
-            delete wait_for_delete;
-            wait_for_delete = NULL;
-        }
-        return;
+        EPDGUI_Process();
+        last_active_time = millis();
     }
+    else
+    {
+        EPDGUI_Process(event->x, event->y);
+        last_active_time = 0;
+    }
+    free(event);
+    if ((last_active_time != 0) && (millis() - last_active_time > 2000))
+    {
+        if (M5.EPD.UpdateCount() > 4)
+        {
+            M5.EPD.ResetUpdateCount();
+            if (_is_auto_update)
+            {
+                M5.EPD.UpdateFull(UPDATE_MODE_GL16);
+            }
+        }
+        last_active_time = 0;
+    }
+}
 
+void EPDGUI_TouchEventLoopOn2ndCore(void *pvParameters)
+{
+    while (1)
+    {
+        delay(1);
+        if (M5.TP.avaliable())
+        {
+            I2C_MUTEX_LOCK();
+            M5.TP.update();
+            I2C_MUTEX_UNLOCK();
+
+            bool is_finger_up = M5.TP.isFingerUp();
+            bool need_notify = false;
+            if (_is_finger_up != is_finger_up || (_last_pos_x != M5.TP.readFingerX(0)) || (_last_pos_y != M5.TP.readFingerY(0)))
+            {
+                _is_finger_up = is_finger_up;
+                _last_pos_x = M5.TP.readFingerX(0);
+                _last_pos_y = M5.TP.readFingerY(0);
+                need_notify = true;
+            }
+            delay(5);
+            I2C_MUTEX_LOCK();
+            M5.TP.flush();
+            I2C_MUTEX_UNLOCK();
+            if (need_notify)
+            {
+                touch_event_struct_t *event = (touch_event_struct_t *)malloc(sizeof(touch_event_struct_t));
+                event->is_finger_up = _is_finger_up;
+                event->x = _last_pos_x;
+                event->y = _last_pos_y;
+                bool success = main_task_runner.PostHighPriorityTask(EPDGUI_HandleTouchEventFunc, event, func_map_for_debug[EPDGUI_HandleTouchEventFunc]);
+                if (!success)
+                {
+                    free(event);
+                }
+            }
+        }
+    }
+    vTaskDelete(NULL);
+}
+
+void EPDGUI_ExitFrame(Frame_Base *frame)
+{
+    frame->exit();
+    log_d("Exit %s", frame->GetFrameName().c_str());
+    if (wait_for_delete != NULL)
+    {
+        delete wait_for_delete;
+        wait_for_delete = NULL;
+    }
+}
+
+void EPDGUI_UpdateFull(Frame_Base *frame)
+{
     EPDGUI_Draw(UPDATE_MODE_NONE);
-    if((frame->GetFrameID() == 1) || (frame_switch_count > 3))
+    if ((frame->GetFrameID() == 1) || (frame_switch_count > 3))
     {
         frame_switch_count = 0;
         M5.EPD.UpdateFull(UPDATE_MODE_GC16);
@@ -82,63 +171,25 @@ void EPDGUI_Run(Frame_Base* frame)
         M5.EPD.UpdateFull(UPDATE_MODE_GL16);
         frame_switch_count++;
     }
+}
 
-    while (1)
+void EPDGUI_RunFrameFunc(void *params)
+{
+    Frame_Base *frame = (Frame_Base *)params;
+    if ((frame->isRun() == 0) || (frame->run() == 0))
     {
-        if((frame->isRun() == 0) || (frame->run() == 0))
-        {
-            frame->exit();
-            // M5.EPD.Clear();
-            log_d("Exit %s", frame->GetFrameName().c_str());
-            if(wait_for_delete != NULL)
-            {
-                log_d("delete %s", wait_for_delete->GetFrameName().c_str());
-                delete wait_for_delete;
-                wait_for_delete = NULL;
-            }
-            return;
-        }
-
-        if (M5.TP.avaliable())
-        {
-            M5.TP.update();
-            bool is_finger_up = M5.TP.isFingerUp();
-            if(is_finger_up || (_last_pos_x != M5.TP.readFingerX(0)) || (_last_pos_y != M5.TP.readFingerY(0)))
-            {
-                _last_pos_x = M5.TP.readFingerX(0);
-                _last_pos_y = M5.TP.readFingerY(0);
-                if(is_finger_up)
-                {
-                    EPDGUI_Process();
-                    last_active_time = millis();
-                }
-                else
-                {
-                    EPDGUI_Process(M5.TP.readFingerX(0), M5.TP.readFingerY(0));
-                    last_active_time = 0;
-                }
-            }
-            
-            
-            M5.TP.flush();
-        }
-
-        if((last_active_time != 0) && (millis() - last_active_time > 2000))
-        {
-            if(M5.EPD.UpdateCount() > 4)
-            {
-                M5.EPD.ResetUpdateCount();
-                if(_is_auto_update)
-                {
-                    M5.EPD.UpdateFull(UPDATE_MODE_GL16);
-                }
-            }
-            last_active_time = 0;
-        }
+        EPDGUI_ExitFrame(frame);
+        // Post a new frame task
+        main_task_runner.PostTask(EPDGUI_StartFrameFunc, NULL, func_map_for_debug[EPDGUI_StartFrameFunc]);
+    }
+    else
+    {
+        // Post current frame task
+        main_task_runner.PostTask(EPDGUI_RunFrameFunc, frame, func_map_for_debug[EPDGUI_RunFrameFunc]);
     }
 }
 
-void EPDGUI_MainLoop(void)
+void EPDGUI_StartFrameFunc(void *params)
 {
     if((!frame_stack.empty()) && (frame_stack.top() != NULL))
     {
@@ -147,8 +198,17 @@ void EPDGUI_MainLoop(void)
         EPDGUI_Clear();
         _is_auto_update = true;
         frame->init(frame_map[frame->GetFrameName()].args);
-        EPDGUI_Run(frame);
+        EPDGUI_UpdateFull(frame);
+        main_task_runner.PostTask(EPDGUI_RunFrameFunc, frame, func_map_for_debug[EPDGUI_RunFrameFunc]);
     }
+}
+
+void EPDGUI_MainLoop(void)
+{
+    // pin touch event loop to esp32 core 1
+    xTaskCreatePinnedToCore(EPDGUI_TouchEventLoopOn2ndCore, "EPDGUI_TouchEventLoopOn2ndCore", 4096, NULL, 1, NULL, 1);
+    main_task_runner.PostTask(EPDGUI_StartFrameFunc, NULL, func_map_for_debug[EPDGUI_StartFrameFunc]);
+    main_looper.LoopForever();
 }
 
 void EPDGUI_AddFrame(String name, Frame_Base* frame)
@@ -191,6 +251,10 @@ void EPDGUI_PushFrame(Frame_Base* frame)
 
 void EPDGUI_PopFrame(bool isDelete)
 {
+    if (frame_stack.size() <= 1) {
+        // at lease leave main frame
+        return;
+    }
     if(isDelete)
     {
         wait_for_delete = frame_stack.top();

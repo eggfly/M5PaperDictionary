@@ -24,4 +24,14 @@ void EPDGUI_AddFrameArg(String name, int n, void* arg);
 Frame_Base* EPDGUI_GetFrame(String name);
 void EPDGUI_SetAutoUpdate(bool isAuto);
 
+// void(void*) functions for PostTask()
+void EPDGUI_StartFrameFunc(void * frame);
+void EPDGUI_RunFrameFunc(void * frame);
+void EPDGUI_HandleTouchEventFunc(void *params);
+
+
+extern SemaphoreHandle_t x_i2c_emaphore;
+#define I2C_MUTEX_LOCK()    do {} while (xSemaphoreTake(x_i2c_emaphore, portMAX_DELAY) != pdPASS)
+#define I2C_MUTEX_UNLOCK()  xSemaphoreGive(x_i2c_emaphore)
+
 #endif //__EPDGUI_H

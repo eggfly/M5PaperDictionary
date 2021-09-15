@@ -2,6 +2,7 @@
 #include "./resources/ImageResource.h"
 #include "esp32-hal-log.h"
 #include <WiFi.h>
+#include "epdgui/epdgui.h"
 
 #define DEFAULT_WALLPAPER 2
 SemaphoreHandle_t _xSemaphore_LoadingAnime = NULL;
@@ -227,13 +228,17 @@ bool SyncNTPTime(void)
         time_struct.hour = timeInfo.tm_hour;
         time_struct.min = timeInfo.tm_min;
         time_struct.sec = timeInfo.tm_sec;
+        I2C_MUTEX_LOCK();
         M5.RTC.setTime(&time_struct);
+        I2C_MUTEX_UNLOCK();
         rtc_date_t date_struct;
         date_struct.week = timeInfo.tm_wday;
         date_struct.mon = timeInfo.tm_mon + 1;
         date_struct.day = timeInfo.tm_mday;
         date_struct.year = timeInfo.tm_year + 1900;
+        I2C_MUTEX_LOCK();
         M5.RTC.setDate(&date_struct);
+        I2C_MUTEX_UNLOCK();
         SetTimeSynced(1);
         return 1;
     }

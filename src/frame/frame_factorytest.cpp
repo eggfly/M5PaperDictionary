@@ -66,6 +66,7 @@ Frame_FactoryTest::Frame_FactoryTest(void)
         pinMode(kPins[i], OUTPUT);
         digitalWrite(kPins[i], HIGH);
     }
+    I2C_MUTEX_LOCK();
     M5.SHT30.Begin();
     M5.RTC.begin();
 
@@ -73,6 +74,7 @@ Frame_FactoryTest::Frame_FactoryTest(void)
     rtc_date_t date_struct;
     M5.RTC.getTime(&time_struct);
     M5.RTC.getDate(&date_struct);
+    I2C_MUTEX_UNLOCK();
 
     if ((isTimeSynced() == 0) || (date_struct.year < 2010))
     {
@@ -80,13 +82,17 @@ Frame_FactoryTest::Frame_FactoryTest(void)
         time_struct.hour = 23;
         time_struct.min = 33;
         time_struct.sec = 33;
+        I2C_MUTEX_LOCK();
         M5.RTC.setTime(&time_struct);
+        I2C_MUTEX_UNLOCK();
         rtc_date_t date_struct;
         date_struct.week = 4;
         date_struct.mon = 9;
         date_struct.day = 24;
         date_struct.year = 2020;
+        I2C_MUTEX_LOCK();
         M5.RTC.setDate(&date_struct);
+        I2C_MUTEX_UNLOCK();
     }
 
     _time = 0;
@@ -292,8 +298,10 @@ int Frame_FactoryTest::run()
         _time = millis();
         rtc_time_t time_struct;
         rtc_date_t date_struct;
+        I2C_MUTEX_LOCK();
         M5.RTC.getTime(&time_struct);
         M5.RTC.getDate(&date_struct);
+        I2C_MUTEX_UNLOCK();
 
         if ((date_struct.year > 2010) && (time_struct.hour <= 24) && (time_struct.min <= 60) && (time_struct.sec <= 60))
         {
@@ -318,7 +326,9 @@ int Frame_FactoryTest::run()
         _canvas_data->drawString(buf, POS_RX, 90);
 
         // SHT30
+        I2C_MUTEX_LOCK();
         M5.SHT30.UpdateData();
+        I2C_MUTEX_UNLOCK();
         if(M5.SHT30.GetError() == 0)
         {
             float ctemp = M5.SHT30.GetTemperature();

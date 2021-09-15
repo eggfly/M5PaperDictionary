@@ -30,6 +30,7 @@ public:
     String getLabel(void) {return _label;}
     void AddArgs(int16_t event, uint16_t n, void* arg);
     void setBMPButton(String label_l, String label_r, const uint8_t *bmp32x32);
+    void setShowPressingAnimation(bool show);
 
     M5EPD_Canvas* CanvasNormal();
     M5EPD_Canvas* CanvasPressed();
@@ -42,6 +43,7 @@ private:
     int16_t _state = EVENT_NONE;
     String _label;
     bool _is_invisable = false;
+    bool _show_pressing_anim = true;
 
 public:
     M5EPD_Canvas* _CanvasNormal = NULL;
