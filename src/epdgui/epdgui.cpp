@@ -33,6 +33,7 @@ bool _is_finger_up = false;
 Looper main_looper;
 TaskRunner main_task_runner(&main_looper);
 SemaphoreHandle_t x_i2c_emaphore = xSemaphoreCreateMutex();
+uint32_t g_last_active_time_millis = 0;
 
 std::map<TaskFunc, const char *> func_map_for_debug = {
     {EPDGUI_StartFrameFunc, "EPDGUI_StartFrameFunc"},
@@ -79,6 +80,8 @@ void EPDGUI_Clear(void)
 
 void EPDGUI_HandleTouchEventFunc(void *params)
 {
+    // update active time to avoid power saving
+    EPDGUI_UpdateLastActiveTime();
     touch_event_struct_t *event = (touch_event_struct_t *)params;
     // log_d("up=%d, x=%d, y=%d", event->is_finger_up, event->x, event->y);
     if (event->is_finger_up)
@@ -274,4 +277,9 @@ void EPDGUI_OverwriteFrame(Frame_Base* frame)
 void EPDGUI_SetAutoUpdate(bool isAuto)
 {
     _is_auto_update = isAuto;
+}
+
+void EPDGUI_UpdateLastActiveTime()
+{
+    g_last_active_time_millis = millis();
 }

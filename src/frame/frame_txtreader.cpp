@@ -88,6 +88,7 @@ uint32_t Frame_txtReader::renderText(uint32_t cursor, uint32_t length, M5EPD_Can
 
 int Frame_txtReader::run()
 {
+    Frame_Base::run();
     if(_is_first)
     {
         LoadingAnime_32x32_Start(254, 500);

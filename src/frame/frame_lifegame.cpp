@@ -171,6 +171,7 @@ void LifeGame_NextGen(void *pvParameters)
 
 int Frame_Lifegame::run()
 {
+    Frame_Base::run();
     M5.update();
     if(M5.BtnP.wasReleased())
     {
