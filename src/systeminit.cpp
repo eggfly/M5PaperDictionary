@@ -80,9 +80,10 @@ void SysInit_Start(void)
     LoadSetting();
     
     M5EPD_Canvas _initcanvas(&M5.EPD);
-    if((!is_factory_test) && SD.exists("/font.ttf"))
+    const char ttf_file[] = "/font.ttf";
+    if ((!is_factory_test) && SD.exists(ttf_file))
     {
-        _initcanvas.loadFont("/font.ttf", SD);
+        _initcanvas.loadFont(ttf_file, SD);
         SetTTFLoaded(true);
     }
     else

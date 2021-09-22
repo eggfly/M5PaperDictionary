@@ -14,7 +14,8 @@ public:
     void AppName(m5epd_update_mode_t mode);
 
 private:
-    EPDGUI_Button *_key[8];
+    static const size_t FRAME_COUNT = 12;
+    EPDGUI_Button *_key[FRAME_COUNT];
     M5EPD_Canvas *_bar;
     M5EPD_Canvas *_names;
     uint32_t _next_update_time;
