@@ -7,6 +7,7 @@
 #include "frame_fileindex.h"
 #include "frame_compare.h"
 #include "frame_home.h"
+#include "frame_go.h"
 
 enum
 {
@@ -117,10 +118,10 @@ void key_home_cb(epdgui_args_vector_t &args)
 
 void key_go_cb(epdgui_args_vector_t &args)
 {
-    Frame_Base *frame = EPDGUI_GetFrame("Frame_Goe");
+    Frame_Base *frame = EPDGUI_GetFrame("Frame_Go");
     if (frame == NULL)
     {
-        frame = new Frame_Home();
+        frame = new Frame_Go();
         EPDGUI_AddFrame("Frame_Go", frame);
     }
     EPDGUI_PushFrame(frame);
@@ -203,8 +204,8 @@ Frame_Main::Frame_Main(void) : Frame_Base(false)
     _key[kKeyHome]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void *)(&_is_run));
     _key[kKeyHome]->Bind(EPDGUI_Button::EVENT_RELEASED, key_home_cb);
 
-    _key[kKeyGo]->CanvasNormal()->pushImage(0, 0, 92, 92, ImageResource_main_icon_home_92x92);
-    *(_key[kKeyGo]->CanvasPressed()) = *(_key[kKeyHome]->CanvasNormal());
+    _key[kKeyGo]->CanvasNormal()->pushImage(0, 0, 92, 92, ImageResource_main_icon_go_92x92);
+    *(_key[kKeyGo]->CanvasPressed()) = *(_key[kKeyGo]->CanvasNormal());
     _key[kKeyGo]->CanvasPressed()->ReverseColor();
     _key[kKeyGo]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void *)(&_is_run));
     _key[kKeyGo]->Bind(EPDGUI_Button::EVENT_RELEASED, key_go_cb);
@@ -279,21 +280,21 @@ void Frame_Main::AppName(m5epd_update_mode_t mode)
     _names->fillCanvas(0);
     if (language == LANGUAGE_JA)
     {
-        _names->drawString("囲碁", 20 + 46, 16);
+        _names->drawString("囲碁/五目並べ", 20 + 46, 16);
         // _names->drawString("刷新比較", 20 + 46 + 136, 16);
         // _names->drawString("家", 20 + 46 + 2 * 136, 16);
         // _names->drawString("ライフゲーム", 20 + 46 + 3 * 136, 16);
     }
     else if (language == LANGUAGE_ZH)
     {
-        _names->drawString("围棋", 20 + 46, 16);
+        _names->drawString("围棋/五子棋", 20 + 46, 16);
         // _names->drawString("刷新比较", 20 + 46 + 136, 16);
         // _names->drawString("家", 20 + 46 + 2 * 136, 16);
         // _names->drawString("生命游戏", 20 + 46 + 3 * 136, 16);
     }
     else
     {
-        _names->drawString("Go", 20 + 46, 16);
+        _names->drawString("Go/FIR", 20 + 46, 16);
         // _names->drawString("Compare", 20 + 46 + 136, 16);
         // _names->drawString("Home", 20 + 46 + 2 * 136, 16);
         // _names->drawString("LifeGame", 20 + 46 + 3 * 136, 16);
@@ -310,7 +311,6 @@ void Frame_Main::StatusBar(m5epd_update_mode_t mode)
     char buf[20];
     _bar->fillCanvas(0);
     _bar->drawFastHLine(0, 43, 540, 15);
-    _bar->drawFastHLine(0, 41, 540, 15);
     _bar->setTextDatum(CL_DATUM);
     _bar->drawString("M5Paper", 10, 27);
 
@@ -350,9 +350,6 @@ void Frame_Main::StatusBar(m5epd_update_mode_t mode)
     sprintf(buf, "%2d:%02d", time_struct.hour, time_struct.min);
     _bar->setTextDatum(CC_DATUM);
     _bar->drawString(buf, 270, 27);
-    _bar->drawFastVLine(160, 1, 42, 15);
-    _bar->drawFastVLine(160 + 20, 0, 42, 15);
-    _bar->drawFastVLine(160 + 40, 2, 42, 15);
     _bar->pushCanvas(0, 0, mode);
 
     _time = millis();
