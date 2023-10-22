@@ -16,6 +16,7 @@ class Frame_Main : public Frame_Base {
     EPDGUI_Button *_key[8];
     M5EPD_Canvas *_bar;
     M5EPD_Canvas *_names;
+    M5EPD_Canvas *_player;
     uint32_t _next_update_time;
     uint32_t _time;
 };

@@ -110,6 +110,9 @@ Frame_Main::Frame_Main(void) : Frame_Base(false) {
     _names->createCanvas(540, 32);
     _names->setTextDatum(CC_DATUM);
 
+    _player = new M5EPD_Canvas(&M5.EPD);
+    _player->createCanvas(540, 380);
+
     for (int i = 0; i < 4; i++) {
         _key[i] = new EPDGUI_Button("测试", 20 + i * 136, 90, KEY_W, KEY_H);
     }
@@ -240,7 +243,10 @@ void Frame_Main::AppName(m5epd_update_mode_t mode) {
         _names->drawString("Home", 20 + 46 + 2 * 136, 16);
         _names->drawString("LifeGame", 20 + 46 + 3 * 136, 16);
     }
+    _player->pushImage(0,0, 540, 380, ImageResource_player_540x380);
+    Serial.println("my push1");
     _names->pushCanvas(0, 337, mode);
+    _player->pushCanvas(0, 0, mode);
 }
 
 void Frame_Main::StatusBar(m5epd_update_mode_t mode) {
