@@ -21,6 +21,12 @@ class Frame_Base {
     int isRun() {
         return _is_run;
     }
+    bool hasWakeLock() {
+        return _wake_lock_enabled;
+    }
+    void setWakeLock(bool enableLock) {
+        _wake_lock_enabled = enableLock;
+    }
     void SetFrameID(uint32_t id) {
         _frame_id = id;
     }
@@ -32,6 +38,7 @@ class Frame_Base {
     static void exit_cb(epdgui_args_vector_t &args);
     void UpdateLastActiveTime();
     String _frame_name;
+    bool _wake_lock_enabled      = false;
     int _is_run                  = 1;
     M5EPD_Canvas *_canvas_title  = NULL;
     M5EPD_Canvas *_canvas_footer = NULL;

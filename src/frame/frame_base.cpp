@@ -38,6 +38,9 @@ void Frame_Base::exitbtn(String title, uint16_t width) {
 }
 
 void Frame_Base::CheckAutoPowerSave() {
+    if (hasWakeLock()) {
+        return;
+    }
     unsigned long now = millis();
     int footer_height = 28;
     int margin_bottom = 10;

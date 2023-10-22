@@ -1,14 +1,16 @@
-#ifndef _FRAME_LIFEGAME_H_
-#define _FRAME_LIFEGAME_H_
+#ifndef _FRAME_MUSIC_PLAYER_H_
+#define _FRAME_MUSIC_PLAYER_H_
 
 #include "frame_base.h"
 #include "../epdgui/epdgui.h"
 
+#include "player/player.hpp"
 
-class Frame_Lifegame : public Frame_Base {
+
+class Frame_MusicPlayer : public Frame_Base {
    public:
-    Frame_Lifegame();
-    ~Frame_Lifegame();
+    Frame_MusicPlayer();
+    ~Frame_MusicPlayer();
     int init(epdgui_args_vector_t &args);
     int run();
     void exit();
@@ -19,6 +21,8 @@ class Frame_Lifegame : public Frame_Base {
     M5EPD_Canvas *canvas_0;
     M5EPD_Canvas *canvas_1;
 
+    singsang::CPlayer player;
+
 };
 
-#endif  //_FRAME_LIFEGAME_H_
+#endif  //_FRAME_MUSIC_PLAYER_H_

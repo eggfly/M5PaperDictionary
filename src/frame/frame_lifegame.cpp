@@ -133,18 +133,19 @@ void LifeGame_NextGen(void *pvParameters) {
 int Frame_Lifegame::run() {
     Frame_Base::run();
     M5.update();
+    // Serial.println("l");
     if (M5.BtnP.wasReleased()) {
         EPDGUI_UpdateGlobalLastActiveTime();
         LifeGame_RandomCell();
     }
-    xTaskCreatePinnedToCore(LifeGame_NextGen, "LifeGame_NextGen", 4096, NULL, 1,
-                            NULL, 0);
+    // xTaskCreatePinnedToCore(LifeGame_NextGen, "LifeGame_NextGen", 4096, NULL, 1,
+    //                         NULL, 0);
     if (lifegame_cells_flag == 0) {
-        lifegame_canvas_1.pushCanvas(0, 72, UPDATE_MODE_DU4);
+        // lifegame_canvas_1.pushCanvas(0, 72, UPDATE_MODE_DU4);
     } else {
-        lifegame_canvas_0.pushCanvas(0, 72, UPDATE_MODE_DU4);
+        // lifegame_canvas_0.pushCanvas(0, 72, UPDATE_MODE_DU4);
     }
-    log_d("");
+    // log_d("");
     return 1;
 }
 
@@ -179,7 +180,6 @@ Frame_Lifegame::~Frame_Lifegame(void) {
 
 int Frame_Lifegame::init(epdgui_args_vector_t &args) {
     _is_run = 1;
-
     lifegame_cells_0.createCanvas(CELL_X, CELL_Y);
     lifegame_cells_1.createCanvas(CELL_X, CELL_Y);
     lifegame_canvas_0.createCanvas(540, 888);

@@ -130,28 +130,43 @@ void SysInit_Start(void) {
 
     Frame_Main *frame_main = new Frame_Main();
     EPDGUI_PushFrame(frame_main);
+    // 1. FactoryTest
     Frame_FactoryTest *frame_factorytest = new Frame_FactoryTest();
     EPDGUI_AddFrame("Frame_FactoryTest", frame_factorytest);
     if (!is_factory_test) {
+        // 2. Settings
         Frame_Setting *frame_setting = new Frame_Setting();
         EPDGUI_AddFrame("Frame_Setting", frame_setting);
+
+        // 2.1 Settings Wallpaper
         Frame_Setting_Wallpaper *frame_wallpaper =
             new Frame_Setting_Wallpaper();
         EPDGUI_AddFrame("Frame_Setting_Wallpaper", frame_wallpaper);
+
+        // 2.2 Settings Language
         Frame_Setting_Language *frame_language = new Frame_Setting_Language();
         EPDGUI_AddFrame("Frame_Setting_Language", frame_language);
+
+        // 3. Keyboard
         Frame_Keyboard *frame_keyboard = new Frame_Keyboard(0);
         EPDGUI_AddFrame("Frame_Keyboard", frame_keyboard);
+
+        // 4. WIFI
         Frame_WifiScan *frame_wifiscan = new Frame_WifiScan();
         EPDGUI_AddFrame("Frame_WifiScan", frame_wifiscan);
+
+        // 4.1 WIFI Password
         Frame_WifiPassword *frame_wifipassword = new Frame_WifiPassword();
         EPDGUI_AddFrame("Frame_WifiPassword", frame_wifipassword);
-        Frame_Lifegame *frame_lifegame = new Frame_Lifegame();
-        EPDGUI_AddFrame("Frame_Lifegame", frame_lifegame);
+        // 6. Compare
         Frame_Compare *frame_compare = new Frame_Compare();
         EPDGUI_AddFrame("Frame_Compare", frame_compare);
+        // 7. Home
         Frame_Home *frame_home = new Frame_Home();
         EPDGUI_AddFrame("Frame_Home", frame_home);
+        // 8. Lifegame
+        Frame_Lifegame *frame_lifegame = new Frame_Lifegame();
+        EPDGUI_AddFrame("Frame_Lifegame", frame_lifegame);
 
         if (isWiFiConfiged()) {
             SysInit_UpdateInfo("Connect to " + GetWifiSSID() + "...");

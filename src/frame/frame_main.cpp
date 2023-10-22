@@ -7,8 +7,9 @@
 #include "frame_fileindex.h"
 #include "frame_compare.h"
 #include "frame_home.h"
+#include "frame_music_player.h"
 
-enum {
+enum LauncherApps {
     kKeyFactoryTest = 0,
     kKeySetting,
     kKeyKeyboard,
@@ -16,8 +17,11 @@ enum {
     kKeySDFile,
     kKeyCompare,
     kKeyHome,
-    kKeyLifeGame
+    kKeyLifeGame,
+    kKeyMusicPlayer,
+    kAppsCountAsLastItem,
 };
+
 
 #define KEY_W 92
 #define KEY_H 92
@@ -98,6 +102,14 @@ void key_home_cb(epdgui_args_vector_t &args) {
     *((int *)(args[0])) = 0;
 }
 
+
+void key_music_player_cb(epdgui_args_vector_t &args) {
+    Frame_Base *frame = new Frame_MusicPlayer();
+    EPDGUI_PushFrame(frame);
+    *((int *)(args[0])) = 0;
+}
+
+
 Frame_Main::Frame_Main(void) : Frame_Base(false) {
     _frame_name = "Frame_Main";
     _frame_id   = 1;
@@ -119,8 +131,10 @@ Frame_Main::Frame_Main(void) : Frame_Base(false) {
 
     for (int i = 0; i < 4; i++) {
         _key[i + 4] =
-            new EPDGUI_Button("测试", 20 + i * 136, 240, KEY_W, KEY_H);
+            new EPDGUI_Button("测试", 20 + i * 136, 90+150, KEY_W, KEY_H);
     }
+    // 9. MusicPlayer
+    _key[8] = new EPDGUI_Button("测试", 20 + 0 * 136, 90+150*2, KEY_W, KEY_H);
 
     _key[kKeySetting]->CanvasNormal()->pushImage(
         0, 0, 92, 92, ImageResource_main_icon_setting_92x92);
@@ -193,12 +207,21 @@ Frame_Main::Frame_Main(void) : Frame_Base(false) {
                             (void *)(&_is_run));
     _key[kKeyHome]->Bind(EPDGUI_Button::EVENT_RELEASED, key_home_cb);
 
+    _key[kKeyMusicPlayer]->CanvasNormal()->pushImage(
+        0, 0, 92, 92, ImageResource_player_icon_92x92);
+    *(_key[kKeyMusicPlayer]->CanvasPressed()) =
+        *(_key[kKeyMusicPlayer]->CanvasNormal());
+    _key[kKeyMusicPlayer]->CanvasPressed()->ReverseColor();
+    _key[kKeyMusicPlayer]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0,
+                               (void *)(&_is_run));
+    _key[kKeyMusicPlayer]->Bind(EPDGUI_Button::EVENT_RELEASED, key_music_player_cb);
+
     _time             = 0;
     _next_update_time = 0;
 }
 
 Frame_Main::~Frame_Main(void) {
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < kAppsCountAsLastItem; i++) {
         delete _key[i];
     }
 }
@@ -243,10 +266,20 @@ void Frame_Main::AppName(m5epd_update_mode_t mode) {
         _names->drawString("Home", 20 + 46 + 2 * 136, 16);
         _names->drawString("LifeGame", 20 + 46 + 3 * 136, 16);
     }
-    _player->pushImage(0,0, 540, 380, ImageResource_player_540x380);
-    Serial.println("my push1");
-    _names->pushCanvas(0, 337, mode);
-    _player->pushCanvas(0, 0, mode);
+    // _player->pushImage(0,0, 540, 380, ImageResource_player_540x380);
+    // Serial.println("my push1");
+    _names->pushCanvas(0, 186 + 151, mode);
+
+    _names->fillCanvas(0);
+    if (language == LANGUAGE_JA) {
+        _names->drawString("音楽", 20 + 46, 16);
+    } else if (language == LANGUAGE_ZH) {
+        _names->drawString("音乐播放器", 20 + 46, 16);
+    } else {
+        _names->drawString("Music", 20 + 46, 16);
+    }
+    _names->pushCanvas(0, 186 + 151 * 2, mode);
+    // _player->pushCanvas(0, 0, mode);
 }
 
 void Frame_Main::StatusBar(m5epd_update_mode_t mode) {
@@ -300,7 +333,7 @@ void Frame_Main::StatusBar(m5epd_update_mode_t mode) {
 int Frame_Main::init(epdgui_args_vector_t &args) {
     _is_run = 1;
     M5.EPD.WriteFullGram4bpp(GetWallpaper());
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < kAppsCountAsLastItem; i++) {
         EPDGUI_AddObject(_key[i]);
     }
     _time             = 0;
