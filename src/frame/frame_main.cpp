@@ -227,7 +227,7 @@ Frame_Main::~Frame_Main(void) {
 }
 
 void Frame_Main::AppName(m5epd_update_mode_t mode) {
-    uint16_t render_size = 22;
+    uint16_t render_size = 23;
     if (!_names->isRenderExist(render_size)) {
         _names->createRender(render_size, 26);
     }
