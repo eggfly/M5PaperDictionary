@@ -101,6 +101,36 @@ void CPlayer::initializeGui()
   //  m_volumeUpWidget.draw(false);
 }
 
+void CPlayer::updateVolume(int f_deltaVolume)
+{
+  constexpr int minVolume = 1;
+  constexpr int maxVolume = 21;
+
+  int newVolume = m_currentVolume + f_deltaVolume;
+
+  if (newVolume < minVolume)
+  {
+    newVolume = minVolume;
+  }
+  if (newVolume > maxVolume)
+  {
+    newVolume = maxVolume;
+  }
+  Serial.printf("newVolume=%d\n", newVolume);
+
+  m_currentVolume = newVolume;
+  m_audio.setVolume(m_currentVolume);
+}
+
+void CPlayer::increaseVolume()
+{
+  updateVolume(+1);
+}
+
+void CPlayer::decreaseVolume() {
+  updateVolume(-1);
+}
+
 void CPlayer::populateMusicFileList() {
 
   File musicDir = SD.open("/20221125");
@@ -182,7 +212,7 @@ void CPlayer::populateMusicFileListByDepth(const char * path, size_t depth) {
     //  }
      nextFileFound = true;
      if (entry.isDirectory()) {
-       if (depth) {
+       if (depth > 0) {
          populateMusicFileListByDepth(entry.path(), depth - 1);
        }
      } else {

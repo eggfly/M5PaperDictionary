@@ -212,9 +212,10 @@ void Frame_WifiScan::Connect() {
     loading.fillCanvas(0);
     loading.pushCanvas(x, y, UPDATE_MODE_GL16);
     _connect_ssid = _connect_key->GetCustomString();
-    log_d("SSID = [%s]\n", _connect_ssid.c_str());
-    log_d("PSWD = [%s]\n", _connect_password.c_str());
+    log_i("SSID = [%s]\n", _connect_ssid.c_str());
+    log_i("PSWD = [%s]\n", _connect_password.c_str());
     WiFi.disconnect();
+    Serial.println("eggfly WIFI");
     WiFi.begin(_connect_ssid.c_str(), _connect_password.c_str());
     uint32_t start_time = millis();
     while (WiFi.status() != WL_CONNECTED) {

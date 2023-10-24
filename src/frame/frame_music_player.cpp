@@ -6,7 +6,13 @@ int Frame_MusicPlayer::run() {
     M5.update();
     // Serial.println("l");
     player.loop();
+    if (M5.BtnR.wasReleased()) {
+        player.increaseVolume();
+    } else if (M5.BtnL.wasReleased()) {
+        player.decreaseVolume();
+    }
     if (M5.BtnP.wasReleased()) {
+        player.startNextSong();
         EPDGUI_UpdateGlobalLastActiveTime();
     }
     return 1;

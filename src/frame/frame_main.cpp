@@ -227,10 +227,11 @@ Frame_Main::~Frame_Main(void) {
 }
 
 void Frame_Main::AppName(m5epd_update_mode_t mode) {
-    if (!_names->isRenderExist(20)) {
-        _names->createRender(20, 26);
+    uint16_t render_size = 22;
+    if (!_names->isRenderExist(render_size)) {
+        _names->createRender(render_size, 26);
     }
-    _names->setTextSize(20);
+    _names->setTextSize(render_size);
     _names->fillCanvas(0);
     uint8_t language = GetLanguage();
     _names->drawString("WLAN", 20 + 46 + 3 * 136, 16);

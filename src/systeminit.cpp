@@ -4,6 +4,10 @@
 #include "Free_Fonts.h"
 #include "global_setting.h"
 #include "resources/binaryttf.h"
+#include "resources/font_hei_ttf.header"
+#include "resources/font_zhunyuan_ttf.header"
+
+#include <SPIFFS.h>
 #include <WiFi.h>
 
 M5EPD_Canvas _initcanvas(&M5.EPD);
@@ -56,6 +60,10 @@ void SysInit_Start(void) {
     delay(50);
     Serial.print("M5EPD initializing...");
 
+    // if (!SPIFFS.begin(false)) {
+    //     log_e("SPIFFS Mount Failed");
+    //     while (1);
+    // }
     pinMode(M5EPD_EXT_PWR_EN_PIN, OUTPUT);
     pinMode(M5EPD_EPD_PWR_EN_PIN, OUTPUT);
     pinMode(M5EPD_KEY_RIGHT_PIN, INPUT);
@@ -110,10 +118,25 @@ void SysInit_Start(void) {
     M5.BatteryADCBegin();
     LoadSetting();
 
-    if ((!is_factory_test) && SD.exists("/font.ttf")) {
-        _initcanvas.loadFont("/font.ttf", SD);
+    if ((!is_factory_test)) {
         SetTTFLoaded(true);
+        // if (SPIFFS.exists("/font.ttf")) {
+        //     log_d("loadFont from SPIFFS.");
+        //     _initcanvas.loadFont("/font.ttf", SPIFFS);
+        // }
+        if (SD.exists("/font.ttf")) {
+            log_d("loadFont from SD card.");
+            _initcanvas.loadFont("/font.ttf", SD);
+        } else {
+            log_d("don't loadFont from PROGMEM.");
+            SetTTFLoaded(false);
+            // drom0_0_seg max 0x330000?
+            // https://transfonter.org/
+            // _initcanvas.loadFont(font_zhunyuan_ttf, sizeof(font_zhunyuan_ttf));
+            // _initcanvas.loadFont(font_hei_ttf, sizeof(font_hei_ttf));
+        }
     } else {
+        log_d("loadFont binaryttf from PROGMEM.");
         _initcanvas.loadFont(binaryttf, sizeof(binaryttf));
         SetTTFLoaded(false);
         SetLanguage(LANGUAGE_EN);
@@ -170,6 +193,7 @@ void SysInit_Start(void) {
 
         if (isWiFiConfiged()) {
             SysInit_UpdateInfo("Connect to " + GetWifiSSID() + "...");
+            Serial.println("eggfly WIFI");
             WiFi.begin(GetWifiSSID().c_str(), GetWifiPassword().c_str());
             uint32_t t = millis();
             while (1) {
