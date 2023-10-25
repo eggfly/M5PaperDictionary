@@ -114,10 +114,14 @@ Frame_Main::Frame_Main(void) : Frame_Base(false) {
     _frame_name = "Frame_Main";
     _frame_id   = 1;
 
+    log_e("before new M5EPD_Canvas");
     _bar = new M5EPD_Canvas(&M5.EPD);
+    log_e("before createCanvas");
     _bar->createCanvas(540, 44);
+    log_e("before setTextSize");
     _bar->setTextSize(26);
 
+    log_e("before M5EPD_Canvas 2");
     _names = new M5EPD_Canvas(&M5.EPD);
     _names->createCanvas(540, 32);
     _names->setTextDatum(CC_DATUM);
@@ -125,10 +129,12 @@ Frame_Main::Frame_Main(void) : Frame_Base(false) {
     _player = new M5EPD_Canvas(&M5.EPD);
     _player->createCanvas(540, 380);
 
+    log_e("before for loop 1");
     for (int i = 0; i < 4; i++) {
         _key[i] = new EPDGUI_Button("测试", 20 + i * 136, 90, KEY_W, KEY_H);
     }
 
+    log_e("before for loop 2");
     for (int i = 0; i < 4; i++) {
         _key[i + 4] =
             new EPDGUI_Button("测试", 20 + i * 136, 90+150, KEY_W, KEY_H);
@@ -218,6 +224,7 @@ Frame_Main::Frame_Main(void) : Frame_Base(false) {
 
     _time             = 0;
     _next_update_time = 0;
+    log_e("Frame_Main::Frame_Main() finished");
 }
 
 Frame_Main::~Frame_Main(void) {
@@ -227,7 +234,7 @@ Frame_Main::~Frame_Main(void) {
 }
 
 void Frame_Main::AppName(m5epd_update_mode_t mode) {
-    uint16_t render_size = 23;
+    uint16_t render_size = 22;
     if (!_names->isRenderExist(render_size)) {
         _names->createRender(render_size, 26);
     }

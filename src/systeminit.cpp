@@ -29,7 +29,7 @@ void Screen_Test(void) {
     Serial.println("Start Screen Life Test...");
     _initcanvas.createCanvas(540, 960);
     _initcanvas.setTextSize(4);
-    delay(1000);
+    delay(100);
     float min = 0;
     while (1) {
         for (uint8_t pos = 0; pos < 2; pos++) {
@@ -69,19 +69,44 @@ void SysInit_Start(void) {
     pinMode(M5EPD_KEY_RIGHT_PIN, INPUT);
     pinMode(M5EPD_KEY_PUSH_PIN, INPUT);
     pinMode(M5EPD_KEY_LEFT_PIN, INPUT);
+    M5.enableEPDPower();
     delay(100);
 
     M5.enableEXTPower();
-    // M5.disableEPDPower();
-    // delay(500);
-    M5.enableEPDPower();
-    delay(1000);
 
     M5.EPD.begin(M5EPD_SCK_PIN, M5EPD_MOSI_PIN, M5EPD_MISO_PIN, M5EPD_CS_PIN,
                  M5EPD_BUSY_PIN);
     M5.EPD.Clear(true);
     M5.EPD.SetRotation(M5EPD_Driver::ROTATE_90);
     M5.TP.SetRotation(GT911::ROTATE_90);
+    // splash screen
+    const uint16_t kPosy = 548;
+    const uint8_t *kLD[] = {
+        ImageResource_loading_01_96x96, ImageResource_loading_02_96x96,
+        ImageResource_loading_03_96x96, ImageResource_loading_04_96x96,
+        ImageResource_loading_05_96x96, ImageResource_loading_06_96x96,
+        ImageResource_loading_07_96x96, ImageResource_loading_08_96x96,
+        ImageResource_loading_09_96x96, ImageResource_loading_10_96x96,
+        ImageResource_loading_11_96x96, ImageResource_loading_12_96x96,
+        ImageResource_loading_13_96x96, ImageResource_loading_14_96x96,
+        ImageResource_loading_15_96x96, ImageResource_loading_16_96x96};
+
+    M5EPD_Canvas LoadingIMG(&M5.EPD);
+    M5EPD_Canvas Info(&M5.EPD);
+    LoadingIMG.createCanvas(96, 96);
+    Info.createCanvas(540, 50);
+    Info.setFreeFont(FF18);
+    Info.setTextSize(1);
+    Info.setTextDatum(CC_DATUM);
+    Info.setTextColor(15);
+
+    M5.EPD.WritePartGram4bpp(92, 182, 356, 300, ImageResource_logo_356x300);
+    M5.EPD.UpdateFull(UPDATE_MODE_GC16);
+
+    int i = 0;
+    char *p;
+    uint32_t time = 0;
+    // eof 
 
     if (!digitalRead(39)) {
         delay(10);
@@ -89,11 +114,6 @@ void SysInit_Start(void) {
             Screen_Test();
         }
     }
-
-    disableCore0WDT();
-    // xTaskCreatePinnedToCore(SysInit_Loading, "SysInit_Loading", 4096, NULL, 1,
-    //                         NULL, 0);
-    // SysInit_UpdateInfo("Initializing SD card...");
     bool is_factory_test;
     SPI.begin(14, 13, 12, 4);
     ret = SD.begin(4, SPI, 20000000);
@@ -106,17 +126,6 @@ void SysInit_Start(void) {
     } else {
         is_factory_test = SD.exists("/__factory_test_flag__");
     }
-
-    SysInit_UpdateInfo("Initializing Touch pad...");
-    if (M5.TP.begin(21, 22, 36) != ESP_OK) {
-        SetInitStatus(1, 0);
-        log_e("Touch pad initialization failed.");
-        SysInit_UpdateInfo("[ERROR] Failed to initialize Touch pad.");
-        WaitForUser();
-    }
-
-    M5.BatteryADCBegin();
-    LoadSetting();
 
     if ((!is_factory_test)) {
         SetTTFLoaded(true);
@@ -142,18 +151,46 @@ void SysInit_Start(void) {
         SetLanguage(LANGUAGE_EN);
         is_factory_test = true;
     }
+    log_d("before createRender()");
+    _initcanvas.createRender(36);
+    _initcanvas.createRender(26, 128);
+    log_d("createRender() done");
+    
+    Info.drawString("Starting up...", 270, 20);
 
+    disableCore0WDT();
+    xTaskCreatePinnedToCore(SysInit_Loading, "SysInit_Loading", 4096, NULL, 1,
+                            NULL, 0);
+    // SysInit_UpdateInfo("Initializing SD card...");
+
+    delay(1*1000);
+    log_e("Touch pad initialization start.");
+    SysInit_UpdateInfo("Initializing Touch pad...");
+    log_e("Touch pad initialization start 1.");
+    if (M5.TP.begin(21, 22, 36) != ESP_OK) {
+        SetInitStatus(1, 0);
+        log_e("Touch pad initialization failed.");
+        SysInit_UpdateInfo("[ERROR] Failed to initialize Touch pad.");
+        WaitForUser();
+    }
+    log_e("Touch pad initialization done.");
+
+    M5.BatteryADCBegin();
+    LoadSetting();
+    log_e("LoadSetting done.");
     if (is_factory_test) {
         SysInit_UpdateInfo("$OK");
     } else {
         SysInit_UpdateInfo("Initializing system...");
     }
+    log_e("is_factory_test done.");
 
-    _initcanvas.createRender(26, 128);
-
+    log_e("before new Frame_Main().");
     Frame_Main *frame_main = new Frame_Main();
+    log_e("after new Frame_Main().");
     EPDGUI_PushFrame(frame_main);
     // 1. FactoryTest
+    log_e("before Frame_FactoryTest.");
     Frame_FactoryTest *frame_factorytest = new Frame_FactoryTest();
     EPDGUI_AddFrame("Frame_FactoryTest", frame_factorytest);
     if (!is_factory_test) {
@@ -185,12 +222,15 @@ void SysInit_Start(void) {
         Frame_Compare *frame_compare = new Frame_Compare();
         EPDGUI_AddFrame("Frame_Compare", frame_compare);
         // 7. Home
+        log_e("before Frame_Home.");
         Frame_Home *frame_home = new Frame_Home();
         EPDGUI_AddFrame("Frame_Home", frame_home);
+        log_e("after Frame_Home.");
         // 8. Lifegame
         Frame_Lifegame *frame_lifegame = new Frame_Lifegame();
         EPDGUI_AddFrame("Frame_Lifegame", frame_lifegame);
 
+        log_e("isWiFiConfiged()?");
         if (isWiFiConfiged()) {
             SysInit_UpdateInfo("Connect to " + GetWifiSSID() + "...");
             Serial.println("eggfly WIFI");
@@ -211,8 +251,8 @@ void SysInit_Start(void) {
 
     log_d("done");
 
-    // while (uxQueueMessagesWaiting(xQueue_Info))
-    //     ;
+    while (uxQueueMessagesWaiting(xQueue_Info));
+    log_d("wait xQueue_Info done!");
 
     if (!is_factory_test) {
         SysInit_UpdateInfo("$OK");
@@ -246,7 +286,6 @@ void SysInit_Loading(void *pvParameters) {
 
     M5.EPD.WritePartGram4bpp(92, 182, 356, 300, ImageResource_logo_356x300);
     M5.EPD.UpdateFull(UPDATE_MODE_GC16);
-
     int i = 0;
     char *p;
     uint32_t time = 0;
@@ -292,7 +331,9 @@ void SysInit_Loading(void *pvParameters) {
             }
         }
     }
+    log_d("before return");
     vTaskDelete(NULL);
+    return;
 }
 
 void SysInit_UpdateInfo(String info) {
