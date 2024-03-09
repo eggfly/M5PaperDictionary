@@ -133,9 +133,9 @@ void SysInit_Start(void) {
         //     log_d("loadFont from SPIFFS.");
         //     _initcanvas.loadFont("/font.ttf", SPIFFS);
         // }
-        if (SD.exists("/font.ttf")) {
+        if (SD.exists("/wqy.ttf")) {
             log_d("loadFont from SD card.");
-            _initcanvas.loadFont("/font.ttf", SD);
+            _initcanvas.loadFont("/wqy.ttf", SD);
         } else {
             log_d("don't loadFont from PROGMEM.");
             SetTTFLoaded(false);
@@ -159,8 +159,8 @@ void SysInit_Start(void) {
     Info.drawString("Starting up...", 270, 20);
 
     disableCore0WDT();
-    xTaskCreatePinnedToCore(SysInit_Loading, "SysInit_Loading", 4096, NULL, 1,
-                            NULL, 0);
+    // xTaskCreatePinnedToCore(SysInit_Loading, "SysInit_Loading", 4096, NULL, 1,
+    //                         NULL, 0);
     // SysInit_UpdateInfo("Initializing SD card...");
 
     delay(1*1000);
@@ -251,7 +251,7 @@ void SysInit_Start(void) {
 
     log_d("done");
 
-    while (uxQueueMessagesWaiting(xQueue_Info));
+    // while (uxQueueMessagesWaiting(xQueue_Info));
     log_d("wait xQueue_Info done!");
 
     if (!is_factory_test) {

@@ -16,13 +16,11 @@ class Frame_MusicPlayer : public Frame_Base {
     void exit();
 
    private:
-    M5EPD_Canvas *cells_0;
-    M5EPD_Canvas *cells_1;
-    M5EPD_Canvas *canvas_0;
-    M5EPD_Canvas *canvas_1;
-
+    M5EPD_Canvas *_info_canvas;
     singsang::CPlayer player;
-
+    const char * m_currentSongPath;
+    size_t m_vinylAnimIndex = 0;
+    int32_t m_lastAnimTime = 0;
 };
 
 #endif  //_FRAME_MUSIC_PLAYER_H_

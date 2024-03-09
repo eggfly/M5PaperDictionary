@@ -12,6 +12,7 @@ class Frame_Keyboard : public Frame_Base {
     int init(epdgui_args_vector_t &args);
 
    private:
+    M5EPD_Canvas *emu_canvas;
     EPDGUI_Textbox *inputbox;
     EPDGUI_Keyboard *keyboard;
     EPDGUI_Button *key_textclear;

@@ -18,13 +18,14 @@ class CPlayer
 
     void loop();
 
-    void startNextSong();
+    const char * startNextSong();
 
     void updateVolume(int f_deltaVolume);
 
     void increaseVolume();
 
     void decreaseVolume();
+    const char * getCurrentSongPath();
 
   private:
     void handleInactivityTimeout();
@@ -40,11 +41,12 @@ class CPlayer
     Audio m_audio{};
 
     bool                m_isPausing{false};
-    int                 m_currentVolume{0};
+    int                 m_currentVolume{4}; // 0...21
     int                 m_activeSongIdx{ -1};
     unsigned int        m_turnOffAfterInactiveForMilliSec{5 * 60 * 1000};
     unsigned int        m_lastActivityTimestamp{0};
     std::vector<String> m_songFiles{};
+
 
     //    CBatteryWidget       m_batteryWidget;
     //    CFileSelectionWidget m_fileSelectionWidget;

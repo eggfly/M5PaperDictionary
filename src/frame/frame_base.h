@@ -6,6 +6,7 @@
 #include "../global_setting.h"
 #include "../resources/ImageResource.h"
 #include "../resources/MyImageResource.h"
+#include "../resources/ImageResource_Vinyl.h"
 
 class Frame_Base {
    public:

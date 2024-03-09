@@ -1,5 +1,5 @@
 #include "frame_keyboard.h"
-
+#include "../resources/ImageResource_emu.h"
 uint16_t textsize = 26;
 
 void key_textclear_cb(epdgui_args_vector_t &args) {
@@ -99,10 +99,10 @@ Frame_Keyboard::Frame_Keyboard(bool isHorizontal) : Frame_Base() {
         _canvas_title->drawString("鍵盤", 270, 34);
     } else if (language == LANGUAGE_ZH) {
         exitbtn("主页");
-        _canvas_title->drawString("键盘", 270, 34);
+        _canvas_title->drawString("文曲星模拟器", 270, 34);
     } else {
         exitbtn("Home");
-        _canvas_title->drawString("Keyboard", 270, 34);
+        _canvas_title->drawString("Dictionary Emulator", 270, 34);
     }
 
     _key_exit->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void *)(&_is_run));
@@ -116,6 +116,7 @@ Frame_Keyboard::~Frame_Keyboard() {
     delete key_textsize_plus;
     delete key_textsize_reset;
     delete key_textsize_minus;
+    delete emu_canvas;
 }
 
 int Frame_Keyboard::init(epdgui_args_vector_t &args) {
@@ -129,11 +130,18 @@ int Frame_Keyboard::init(epdgui_args_vector_t &args) {
     EPDGUI_AddObject(key_textsize_plus);
     EPDGUI_AddObject(key_textsize_reset);
     EPDGUI_AddObject(key_textsize_minus);
+    emu_canvas = new M5EPD_Canvas(&M5.EPD);
+    emu_canvas->createCanvas(320, 160);
+    emu_canvas->pushImage(0,0,320,160, ImageResource_time_320x160);
     return 6;
 }
-
+bool pushed = false;
 int Frame_Keyboard::run(void) {
     Frame_Base::run();
     inputbox->AddText(keyboard->getData());
+    if (!pushed) {
+        emu_canvas->pushCanvas((540 - 320) / 2, 180, UPDATE_MODE_GC16);
+        pushed = true;
+    }
     return 1;
 }

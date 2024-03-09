@@ -57,17 +57,24 @@ void CPlayer::initializeHardware()
     // SPI.setFrequency(20000);
   }
   m_audio.setPinout(I2S_BCLK, I2S_LRC, I2S_DOUT);
-  m_audio.setVolume(4); // 0...21
+  m_audio.setVolume(m_currentVolume); // 0...21
   // populateMusicFileList();
-  populateMusicFileListByDepth("/", 1);
+  populateMusicFileListByDepth("/music", 1); // Don't use /music/
   // vibrate();
 }
 
-void CPlayer::startNextSong()
+const char * CPlayer::getCurrentSongPath() {
+  if (m_activeSongIdx < 0 || m_activeSongIdx >= m_songFiles.size()) {
+    return nullptr;
+  }
+  return m_songFiles[m_activeSongIdx].c_str();
+}
+
+const char * CPlayer::startNextSong()
 {
   if (m_songFiles.size() == 0)
   {
-    return;
+    return nullptr;
   }
   size_t pos = random(m_songFiles.size());
   m_activeSongIdx = pos;
@@ -80,9 +87,10 @@ void CPlayer::startNextSong()
   {
     m_audio.stopSong();
   }
-  auto song_path = m_songFiles[m_activeSongIdx].c_str();
+  const char * song_path = m_songFiles[m_activeSongIdx].c_str();
   Serial.printf("Play: %s\n", song_path);
   m_audio.connecttoSD(song_path);
+  return song_path;
 }
 
 void CPlayer::initializeGui()
@@ -220,7 +228,7 @@ void CPlayer::populateMusicFileListByDepth(const char * path, size_t depth) {
        if (entryIsFile) {
          if (endsWithIgnoreCase(entry.name(), ".mp3")
              || endsWithIgnoreCase(entry.name(), ".flac")
-             || endsWithIgnoreCase(entry.name(), ".m4a")
+             // || endsWithIgnoreCase(entry.name(), ".m4a")
              || endsWithIgnoreCase(entry.name(), ".aac")
              || endsWithIgnoreCase(entry.name(), ".wav")
             ) {
